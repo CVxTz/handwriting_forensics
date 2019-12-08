@@ -35,17 +35,18 @@ val_writers_mapping = {k: v for k, v in writer_images_mapping.items() if int(k) 
 
 def gen(writers_to_images_map, batch_size=16):
     writers = list(writers_to_images_map.keys())
+    soft_val = 0.000000000000001
     while True:
         half_batch_writers = sample(writers, batch_size // 2)
         batch_tuples = list(zip(half_batch_writers, half_batch_writers))
-        labels = [0.99] * len(batch_tuples)
+        labels = [1-soft_val] * len(batch_tuples)
         while len(batch_tuples) < batch_size:
             p1 = choice(writers)
             p2 = choice(writers)
 
             if p1 != p2:
                 batch_tuples.append((p1, p2))
-                labels.append(0.01)
+                labels.append(soft_val)
 
         X1 = [choice(writers_to_images_map[x[0]]) for x in batch_tuples]
         X1 = np.array([read_img(x) for x in X1])/255
@@ -98,8 +99,15 @@ callbacks_list = [checkpoint, reduce_on_plateau]
 
 model = baseline_model()
 
-#model.load_weights(file_path)
+try:
+    model.load_weights(file_path)
+except:
+    print("No model to load")
 
 model.fit_generator(gen(train_writers_mapping, batch_size=8), use_multiprocessing=True,
                     validation_data=gen(val_writers_mapping, batch_size=8), epochs=1000, verbose=1,
                     workers=4, callbacks=callbacks_list, steps_per_epoch=200, validation_steps=100)
+
+eval = model.evaluate_generator(gen(val_writers_mapping, batch_size=32), steps=1000)
+
+print(eval)

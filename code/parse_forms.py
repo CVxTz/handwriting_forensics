@@ -13,6 +13,7 @@ if __name__=="__main__":
 
     writer_form_mapping = defaultdict(list)
     writer_images_mapping = defaultdict(list)
+    writer_json_mapping = defaultdict(list)
 
     form_writer_mapping = {}
 
@@ -24,6 +25,7 @@ if __name__=="__main__":
         json.dump(writer_form_mapping, f, indent=4)
 
     image_paths = glob("../input/clean_images/**/*.png", recursive=True)
+    json_paths = glob("../input/jsons/*.json")
 
     for path in image_paths:
         name = Path(path).stem
@@ -33,5 +35,14 @@ if __name__=="__main__":
 
     with open('writer_images_mapping.json', "w") as f:
         json.dump(writer_images_mapping, f, indent=4)
+
+    for path in json_paths:
+        name = Path(path).stem
+        base_name = "-".join(name.split("-")[:2])
+        if base_name in form_writer_mapping:
+            writer_json_mapping[form_writer_mapping[base_name]].append(path)
+
+    with open('writer_json_mapping.json', "w") as f:
+        json.dump(writer_json_mapping, f, indent=4)
 
 
