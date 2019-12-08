@@ -12,7 +12,6 @@ def crop_white(img):
     points = np.argwhere(thresh_gray == 0)  # find where the black pixels are
     points = np.fliplr(points)  # store them in x,y coordinates instead of row,col indices
     x, y, w, h = cv2.boundingRect(points)  # create a rectangle around those points
-    x, y, w, h = x - 10, y - 10, w + 20, h + 20  # make the box a little bigger
     crop = img[y:y + h, x:x + w]  # create a cropped region of the gray image
     return crop
 

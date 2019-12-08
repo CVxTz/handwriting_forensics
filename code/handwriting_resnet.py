@@ -4,7 +4,7 @@ from random import choice, sample
 import cv2
 import numpy as np
 import tensorflow.keras.backend as K
-from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
+from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from tensorflow.keras.layers import Input, Dense, GlobalMaxPool2D, GlobalAvgPool2D, Concatenate, Multiply, Dropout, \
     Subtract
@@ -48,10 +48,10 @@ def gen(writers_to_images_map, batch_size=16):
                 labels.append(0.01)
 
         X1 = [choice(writers_to_images_map[x[0]]) for x in batch_tuples]
-        X1 = np.array([read_img(x) for x in X1])
+        X1 = np.array([read_img(x) for x in X1])/255
 
         X2 = [choice(writers_to_images_map[x[1]]) for x in batch_tuples]
-        X2 = np.array([read_img(x) for x in X2])
+        X2 = np.array([read_img(x) for x in X2])/255
 
         yield [X1, X2], labels
 
@@ -60,7 +60,7 @@ def baseline_model():
     input_1 = Input(shape=(None, None, 3))
     input_2 = Input(shape=(None, None, 3))
 
-    base_model = MobileNetV2(weights="imagenet", include_top=False)
+    base_model = ResNet50(weights="imagenet", include_top=False)
 
     x1 = base_model(input_1)
     x2 = base_model(input_2)
@@ -88,7 +88,7 @@ def baseline_model():
     return model
 
 
-file_path = "baseline.h5"
+file_path = "handwriting_baseline.h5"
 
 checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 
@@ -98,7 +98,7 @@ callbacks_list = [checkpoint, reduce_on_plateau]
 
 model = baseline_model()
 
-model.load_weights(file_path)
+#model.load_weights(file_path)
 
 model.fit_generator(gen(train_writers_mapping, batch_size=8), use_multiprocessing=True,
                     validation_data=gen(val_writers_mapping, batch_size=8), epochs=1000, verbose=1,
