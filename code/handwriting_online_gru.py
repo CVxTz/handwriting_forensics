@@ -153,10 +153,11 @@ try:
 except:
     print("No model to load")
 
-model.fit_generator(gen(train_writers_mapping, batch_size=32), use_multiprocessing=True,
-                    validation_data=gen(val_writers_mapping, batch_size=32), epochs=1000, verbose=1,
-                    workers=4, callbacks=callbacks_list, steps_per_epoch=200, validation_steps=100)
+# model.fit_generator(gen(train_writers_mapping, batch_size=32), use_multiprocessing=True,
+#                     validation_data=gen(val_writers_mapping, batch_size=32), epochs=1000, verbose=1,
+#                     workers=4, callbacks=callbacks_list, steps_per_epoch=200, validation_steps=100)
 
 eval = model.evaluate_generator(gen(val_writers_mapping, batch_size=32), steps=1000)
 
 print(eval)
+#[0.2315092908050865, 0.9208437]
