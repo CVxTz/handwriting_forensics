@@ -58,13 +58,6 @@ def read_sample(path):
     return generate_sample_from_strokes(data)
 
 
-with open('writer_json_mapping.json', 'r') as f:
-    writer_json_mapping = json.load(f)
-
-train_writers_mapping = {k: v for k, v in writer_json_mapping.items() if int(k) % 10 != 1}
-val_writers_mapping = {k: v for k, v in writer_json_mapping.items() if int(k) % 10 == 1}
-
-
 def gen(writers_to_images_map, batch_size=16):
     writers = list(writers_to_images_map.keys())
     soft_val = 0.001
@@ -138,26 +131,34 @@ def baseline_model(seq_dim=3):
     return model
 
 
-file_path = "handwriting_online_gru.h5"
+if __name__ == "__main__":
 
-checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    with open('writer_json_mapping.json', 'r') as f:
+        writer_json_mapping = json.load(f)
 
-reduce_on_plateau = ReduceLROnPlateau(monitor="val_acc", mode="max", factor=0.1, patience=20, verbose=1)
+    train_writers_mapping = {k: v for k, v in writer_json_mapping.items() if int(k) % 10 != 1}
+    val_writers_mapping = {k: v for k, v in writer_json_mapping.items() if int(k) % 10 == 1}
 
-callbacks_list = [checkpoint, reduce_on_plateau]
+    file_path = "handwriting_online_gru.h5"
 
-model = baseline_model()
+    checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 
-try:
-    model.load_weights(file_path)
-except:
-    print("No model to load")
+    reduce_on_plateau = ReduceLROnPlateau(monitor="val_acc", mode="max", factor=0.1, patience=20, verbose=1)
 
-# model.fit_generator(gen(train_writers_mapping, batch_size=32), use_multiprocessing=True,
-#                     validation_data=gen(val_writers_mapping, batch_size=32), epochs=1000, verbose=1,
-#                     workers=4, callbacks=callbacks_list, steps_per_epoch=200, validation_steps=100)
+    callbacks_list = [checkpoint, reduce_on_plateau]
 
-eval = model.evaluate_generator(gen(val_writers_mapping, batch_size=32), steps=1000)
+    model = baseline_model()
 
-print(eval)
-#[0.2315092908050865, 0.9208437]
+    try:
+        model.load_weights(file_path)
+    except:
+        print("No model to load")
+
+    model.fit_generator(gen(train_writers_mapping, batch_size=32), use_multiprocessing=True,
+                        validation_data=gen(val_writers_mapping, batch_size=32), epochs=1000, verbose=1,
+                        workers=4, callbacks=callbacks_list, steps_per_epoch=200, validation_steps=100)
+
+    eval = model.evaluate_generator(gen(val_writers_mapping, batch_size=32), steps=1000)
+
+    print(eval)
+    #[0.2315092908050865, 0.9208437]

@@ -14,23 +14,16 @@ from tensorflow.python.ops import math_ops
 
 
 def acc(y_true, y_pred, threshold=0.5):
-  threshold = math_ops.cast(threshold, y_pred.dtype)
-  y_pred = math_ops.cast(y_pred > threshold, y_pred.dtype)
-  y_true = math_ops.cast(y_true > threshold, y_pred.dtype)
+    threshold = math_ops.cast(threshold, y_pred.dtype)
+    y_pred = math_ops.cast(y_pred > threshold, y_pred.dtype)
+    y_true = math_ops.cast(y_true > threshold, y_pred.dtype)
 
-  return K.mean(math_ops.equal(y_true, y_pred), axis=-1)
+    return K.mean(math_ops.equal(y_true, y_pred), axis=-1)
 
 
 def read_img(path):
     img = cv2.imread(path)
     return img
-
-
-with open('writer_images_mapping.json', 'r') as f:
-    writer_images_mapping = json.load(f)
-
-train_writers_mapping = {k: v for k, v in writer_images_mapping.items() if int(k) % 10 != 1}
-val_writers_mapping = {k: v for k, v in writer_images_mapping.items() if int(k) % 10 == 1}
 
 
 def gen(writers_to_images_map, batch_size=16):
@@ -39,7 +32,7 @@ def gen(writers_to_images_map, batch_size=16):
     while True:
         half_batch_writers = sample(writers, batch_size // 2)
         batch_tuples = list(zip(half_batch_writers, half_batch_writers))
-        labels = [1-soft_val] * len(batch_tuples)
+        labels = [1 - soft_val] * len(batch_tuples)
         while len(batch_tuples) < batch_size:
             p1 = choice(writers)
             p2 = choice(writers)
@@ -49,10 +42,10 @@ def gen(writers_to_images_map, batch_size=16):
                 labels.append(soft_val)
 
         X1 = [choice(writers_to_images_map[x[0]]) for x in batch_tuples]
-        X1 = np.array([read_img(x) for x in X1])/255
+        X1 = np.array([read_img(x) for x in X1]) / 255
 
         X2 = [choice(writers_to_images_map[x[1]]) for x in batch_tuples]
-        X2 = np.array([read_img(x) for x in X2])/255
+        X2 = np.array([read_img(x) for x in X2]) / 255
 
         yield [X1, X2], labels
 
@@ -89,26 +82,34 @@ def baseline_model():
     return model
 
 
-file_path = "handwriting_baseline.h5"
+if __name__ == "__main__":
 
-checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    with open('writer_images_mapping.json', 'r') as f:
+        writer_images_mapping = json.load(f)
 
-reduce_on_plateau = ReduceLROnPlateau(monitor="val_acc", mode="max", factor=0.1, patience=20, verbose=1)
+    train_writers_mapping = {k: v for k, v in writer_images_mapping.items() if int(k) % 10 != 1}
+    val_writers_mapping = {k: v for k, v in writer_images_mapping.items() if int(k) % 10 == 1}
 
-callbacks_list = [checkpoint, reduce_on_plateau]
+    file_path = "handwriting_baseline.h5"
 
-model = baseline_model()
+    checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 
-try:
-    model.load_weights(file_path)
-except:
-    print("No model to load")
+    reduce_on_plateau = ReduceLROnPlateau(monitor="val_acc", mode="max", factor=0.1, patience=20, verbose=1)
 
-# model.fit_generator(gen(train_writers_mapping, batch_size=8), use_multiprocessing=True,
-#                     validation_data=gen(val_writers_mapping, batch_size=8), epochs=1000, verbose=1,
-#                     workers=4, callbacks=callbacks_list, steps_per_epoch=200, validation_steps=100)
+    callbacks_list = [checkpoint, reduce_on_plateau]
 
-eval = model.evaluate_generator(gen(val_writers_mapping, batch_size=8), steps=4000)
+    model = baseline_model()
 
-print(eval)
-#[0.28920198245928624, 0.8857812]
+    try:
+        model.load_weights(file_path)
+    except:
+        print("No model to load")
+
+    model.fit_generator(gen(train_writers_mapping, batch_size=8), use_multiprocessing=True,
+                        validation_data=gen(val_writers_mapping, batch_size=8), epochs=1000, verbose=1,
+                        workers=4, callbacks=callbacks_list, steps_per_epoch=200, validation_steps=100)
+
+    eval = model.evaluate_generator(gen(val_writers_mapping, batch_size=8), steps=4000)
+
+    print(eval)
+    # [0.28920198245928624, 0.8857812]
