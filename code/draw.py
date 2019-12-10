@@ -5,12 +5,12 @@ import imageio
 
 
 def draw(data, ratio=4):
-    img = np.ones((data['max_y']//ratio, data['max_x']//ratio, 3)) * 255
+    img = np.ones((data['max_y']//ratio+20, data['max_x']//ratio+20, 3)) * 255
     all_steps = [img]
 
     for stroke in data['strokes']:
-        stroke['x'] = [x//ratio for x in stroke['x']]
-        stroke['y'] = [x//ratio for x in stroke['y']]
+        stroke['x'] = [10+x//ratio for x in stroke['x']]
+        stroke['y'] = [10+x//ratio for x in stroke['y']]
 
         points = list(zip(stroke['x'], stroke['y']))
         if points:
