@@ -29,7 +29,9 @@ identification using two separate approaches :
 #### Off-line setting :
 
 ![](https://cdn-images-1.medium.com/max/800/1*3TlslcG3DrQoUsHwb2i9UQ.png)
+
 <span class="figcaption_hack">Static representation of handwriting</span>
+
 
 In the off-line setting we have a static image of the final result of the
 handwriting. This gives a global representation of what the handwriting looks
@@ -41,7 +43,9 @@ model ( Resnet50 in our case) and try to predict if the two samples were written
 by the same person.
 
 ![](https://cdn-images-1.medium.com/max/800/1*GmfGe5bTCzE0k2bKkLd5Tg.png)
+
 <span class="figcaption_hack">Simplified illustration of the off-line model</span>
+
 
 The images are pre-processed to remove the extra white space on the edges and to
 normalize their size to (128, 1024), while being careful to keep the same aspect
@@ -60,7 +64,9 @@ evaluation set at the same time.
 #### On-Line setting :
 
 ![](https://cdn-images-1.medium.com/max/800/1*sBnVwZ1OUY73Vq_fK_x2dQ.gif)
+
 <span class="figcaption_hack">Handwriting with individual strokes details</span>
+
 
 Since we also have the handwriting represented as a sequence of hand strokes,
 with the (x, y) coordinates for each stroke path, we can use this information as
@@ -76,7 +82,9 @@ raw line coordinates as a sequence of (x, y) numbers to a sequential model like
 a GRU.
 
 ![](https://cdn-images-1.medium.com/max/800/1*rOv_W4UqXqfk_WRXnahsQA.png)
+
 <span class="figcaption_hack">Simplified illustration of the on-line model</span>
+
 
 This has a much lighter memory usage and we will show that it can work well with
 a much smaller model than the image encoder.
