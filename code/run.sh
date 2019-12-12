@@ -1,5 +1,5 @@
 #register in http://www.fki.inf.unibe.ch/databases/iam-on-line-handwriting-database/download-the-iam-on-line-handwriting-database
-#Download data/lineImages-all.tar.gz and lineStrokes and ascii
+#Download data/lineImages-all.tar.gz and lineStrokes and ascii and forms.txt
 #decompress it in ../input/
 
 python clean_images.py
