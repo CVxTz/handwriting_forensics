@@ -2,6 +2,10 @@
 
 Data in : http://www.fki.inf.unibe.ch/databases/iam-on-line-handwriting-database/download-the-iam-on-line-handwriting-database
 
+* data/lineStrokes-all.tar.gz
+* ascii-all.tar.gz 
+* data/forms.txt
+
 run.sh for training steps
 
 ### End-To-End Writer Identification : Off-line Vs On-line Approach
